@@ -4,3 +4,5 @@ docker compose up -d --build
 stop
 docker compose down
 
+reset toàn bộ hệ thông và xóa sạch mysql : tóm lại chạy lại từ đầu 
+docker compose down -v
