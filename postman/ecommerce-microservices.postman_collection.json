@@ -16,7 +16,7 @@
     { "key": "token", "value": "" },
     { "key": "refresh", "value": "" },
     { "key": "internal_api_key", "value": "change-me" },
-    { "key": "sku", "value": "SKU-POSTMAN-001" },
+    { "key": "demo_sku", "value": "SKU-POSTMAN-001" },
     { "key": "product_id", "value": "1" },
     { "key": "movement_id", "value": "1" },
     { "key": "cart_item_id", "value": "1" },
@@ -88,7 +88,7 @@
                   "  pm.collectionVariables.set('demo_run_id', runId);",
                   "  pm.collectionVariables.set('username', 'demo_user_' + runId);",
                   "  pm.collectionVariables.set('email', 'demo_' + runId + '@example.com');",
-                  "  pm.collectionVariables.set('sku', 'SKU-' + runId);",
+                  "  pm.collectionVariables.set('demo_sku', 'SKU-' + runId);",
                   "}",
                   "pm.collectionVariables.set('token', '');",
                   "pm.collectionVariables.set('refresh', '');",
@@ -185,6 +185,19 @@
           "name": "02-01 Create Product (save product_id)",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var autoGen = (pm.collectionVariables.get('auto_generate_demo_data') || 'true').toLowerCase();",
+                  "if (autoGen === 'true') {",
+                  "  var skuId = Date.now().toString() + '_' + Math.floor(Math.random() * 100000).toString();",
+                  "  pm.collectionVariables.set('demo_sku', 'SKU-' + skuId);",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -204,7 +217,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"sku\": \"{{sku}}\",\n  \"name\": \"Product Demo\",\n  \"description\": \"Created from Postman\",\n  \"price\": \"{{price}}\",\n  \"stock_quantity\": 10,\n  \"is_active\": true\n}"
+              "raw": "{\n  \"sku\": \"{{demo_sku}}\",\n  \"name\": \"Product Demo\",\n  \"description\": \"Created from Postman\",\n  \"price\": \"{{price}}\",\n  \"stock_quantity\": 10,\n  \"is_active\": true\n}"
             },
             "url": "{{inventory_base}}/api/v1/inventory/products/"
           }

@@ -119,9 +119,10 @@ Luu y de demo nhieu lan khong bi trung:
 - Moi lan ban chay request `01-01 Register`, Postman tu dong sinh moi:
   - `username`
   - `email`
-  - `sku`
+  - `demo_sku`
 - Vi vay ban co the demo lap lai nhieu lan ma khong bi loi trung du lieu.
 - Neu ban muon tu nhap tay du lieu co dinh, doi `auto_generate_demo_data=false`.
+- Request `02-01 Create Product` cung tu dong tao `demo_sku` moi truoc khi gui, nen ban co the chay rieng buoc nay nhieu lan ma khong trung SKU.
 
 ## 6.2 Chay dung thu tu request
 
@@ -155,7 +156,7 @@ Hay chay lan luot dung thu tu sau:
 4) Create Product
 
 - Tao san pham moi o inventory_service.
-- SKU duoc tao moi moi lan demo nen khong bi trung.
+- SKU duoc tao moi moi lan demo (bien `demo_sku`) nen khong bi trung.
 - Script test tu dong luu `product_id`.
 
 5) Add To Cart
@@ -225,6 +226,12 @@ Ghi chu:
 4. Register bi bao trung user/email
 
 - Doi `username`/`email` trong Collection Variables, sau do chay lai.
+
+5. Create Product bi loi `sku da ton tai`
+
+- Re-import lai collection ban moi nhat de nhan script auto tao `demo_sku`.
+- Chay lai request `02-01 Create Product` (khong can sua tay sku).
+- Neu ban dang dung Environment co bien ten `sku`, co the xoa bien do de tranh nham lan.
 
 ## 9) Lenh reset nhanh
 
