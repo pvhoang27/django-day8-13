@@ -1,0 +1,49 @@
+Bước 3: Chui lại vào container của Inventory:
+
+PowerShell
+docker exec -it ecommerce_inventory_service bash
+
+lưu ý cài thư viện :
+uv add --dev pytest pytest-django pytest-cov ruff
+
+Bước 4: Chạy lại lệnh test thần thánh:
+
+Bash
+uv run pytest --cov=inventory --cov-report=term-missing
+
+kết quả test inventory
+root@de2defa7c6e5:/app# uv run pytest --cov=inventory --cov-report=term-missing
+================================= test session starts =================================
+platform linux -- Python 3.12.13, pytest-9.0.3, pluggy-1.6.0 -- /app/.venv/bin/python3
+cachedir: .pytest_cache
+django: version: 6.0.4, settings: config.settings (from ini)
+rootdir: /app
+configfile: pytest.ini
+plugins: cov-7.1.0, django-4.12.0
+collected 4 items                                                                     
+
+inventory/tests.py::TestInventoryModule::test_product_creation PASSED           [ 25%]
+inventory/tests.py::TestInventoryModule::test_list_products_api PASSED          [ 50%]
+inventory/tests.py::TestInventoryModule::test_internal_consume_success PASSED   [ 75%]
+inventory/tests.py::TestInventoryModule::test_mocking_example PASSED            [100%]
+
+=================================== tests coverage ====================================
+__________________ coverage: platform linux, python 3.12.13-final-0 ___________________
+
+Name                                   Stmts   Miss  Cover   Missing
+--------------------------------------------------------------------
+inventory/__init__.py                      0      0   100%
+inventory/admin.py                        12      0   100%
+inventory/apps.py                          4      0   100%
+inventory/migrations/0001_initial.py       6      6     0%   3-14
+inventory/migrations/__init__.py           0      0   100%
+inventory/models.py                       28      1    96%   41
+inventory/permissions.py                   7      0   100%
+inventory/serializers.py                  21      0   100%
+inventory/tests.py                        35      0   100%
+inventory/urls.py                          7      0   100%
+inventory/views.py                        54     16    70%   25, 29-50, 73, 75
+--------------------------------------------------------------------
+TOTAL                                    174     23    87%
+================================== 4 passed in 1.74s ==================================
+root@de2defa7c6e5:/app# 
