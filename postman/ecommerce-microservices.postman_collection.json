@@ -1,0 +1,397 @@
+{
+  "info": {
+    "name": "Ecommerce Microservices - Full Demo APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Huong dan demo cho thay\n\nThu tu chay nhanh de demo thanh cong:\n1) 00-01 Swagger Auth\n2) 00-02 Swagger Inventory\n3) 00-03 Swagger Order\n4) 01-01 Register\n5) 01-02 Login Token\n6) 01-03 Me\n7) 02-01 Create Product\n8) 03-02 Add To Cart\n9) 04-01 Checkout\n10) 04-02 List Orders\n11) 02-02 List Products\n\nCollection nay gom day du tat ca API hien co trong du an: Auth, Inventory, Cart, Orders, Internal consume."
+  },
+  "variable": [
+    { "key": "auth_base", "value": "http://127.0.0.1:8001" },
+    { "key": "inventory_base", "value": "http://127.0.0.1:8002" },
+    { "key": "order_base", "value": "http://127.0.0.1:8003" },
+    { "key": "auto_generate_demo_data", "value": "true" },
+    { "key": "demo_run_id", "value": "" },
+    { "key": "username", "value": "demo_user" },
+    { "key": "email", "value": "demo_user@example.com" },
+    { "key": "password", "value": "DemoPass123" },
+    { "key": "token", "value": "" },
+    { "key": "refresh", "value": "" },
+    { "key": "internal_api_key", "value": "change-me" },
+    { "key": "sku", "value": "SKU-POSTMAN-001" },
+    { "key": "product_id", "value": "1" },
+    { "key": "movement_id", "value": "1" },
+    { "key": "cart_item_id", "value": "1" },
+    { "key": "price", "value": "100000.00" },
+    { "key": "quantity", "value": "2" }
+  ],
+  "item": [
+    {
+      "name": "00 - Setup & Swagger",
+      "item": [
+        {
+          "name": "00-01 Swagger Auth",
+          "request": {
+            "method": "GET",
+            "url": "{{auth_base}}/api/docs/"
+          }
+        },
+        {
+          "name": "00-02 Swagger Inventory",
+          "request": {
+            "method": "GET",
+            "url": "{{inventory_base}}/api/docs/"
+          }
+        },
+        {
+          "name": "00-03 Swagger Order",
+          "request": {
+            "method": "GET",
+            "url": "{{order_base}}/api/docs/"
+          }
+        },
+        {
+          "name": "00-04 Auth Schema",
+          "request": {
+            "method": "GET",
+            "url": "{{auth_base}}/api/schema/"
+          }
+        },
+        {
+          "name": "00-05 Inventory Schema",
+          "request": {
+            "method": "GET",
+            "url": "{{inventory_base}}/api/schema/"
+          }
+        },
+        {
+          "name": "00-06 Order Schema",
+          "request": {
+            "method": "GET",
+            "url": "{{order_base}}/api/schema/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - Auth Service APIs",
+      "item": [
+        {
+          "name": "01-01 Register",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var autoGen = (pm.collectionVariables.get('auto_generate_demo_data') || 'true').toLowerCase();",
+                  "if (autoGen === 'true') {",
+                  "  var runId = Date.now().toString() + '_' + Math.floor(Math.random() * 10000).toString();",
+                  "  pm.collectionVariables.set('demo_run_id', runId);",
+                  "  pm.collectionVariables.set('username', 'demo_user_' + runId);",
+                  "  pm.collectionVariables.set('email', 'demo_' + runId + '@example.com');",
+                  "  pm.collectionVariables.set('sku', 'SKU-' + runId);",
+                  "}",
+                  "pm.collectionVariables.set('token', '');",
+                  "pm.collectionVariables.set('refresh', '');",
+                  "pm.collectionVariables.set('product_id', '1');",
+                  "pm.collectionVariables.set('cart_item_id', '1');",
+                  "pm.collectionVariables.set('movement_id', '1');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"password_confirm\": \"{{password}}\"\n}"
+            },
+            "url": "{{auth_base}}/api/v1/auth/register/"
+          }
+        },
+        {
+          "name": "01-02 Login Token (save token + refresh)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = {};",
+                  "try { json = pm.response.json(); } catch (e) {}",
+                  "if (json.access) { pm.collectionVariables.set('token', json.access); }",
+                  "if (json.refresh) { pm.collectionVariables.set('refresh', json.refresh); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{auth_base}}/api/v1/auth/token/"
+          }
+        },
+        {
+          "name": "01-03 Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{auth_base}}/api/v1/auth/me/"
+          }
+        },
+        {
+          "name": "01-04 Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = {};",
+                  "try { json = pm.response.json(); } catch (e) {}",
+                  "if (json.access) { pm.collectionVariables.set('token', json.access); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh}}\"\n}"
+            },
+            "url": "{{auth_base}}/api/v1/auth/token/refresh/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Inventory Service APIs",
+      "item": [
+        {
+          "name": "02-01 Create Product (save product_id)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = {};",
+                  "try { json = pm.response.json(); } catch (e) {}",
+                  "if (json.id) { pm.collectionVariables.set('product_id', String(json.id)); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"{{sku}}\",\n  \"name\": \"Product Demo\",\n  \"description\": \"Created from Postman\",\n  \"price\": \"{{price}}\",\n  \"stock_quantity\": 10,\n  \"is_active\": true\n}"
+            },
+            "url": "{{inventory_base}}/api/v1/inventory/products/"
+          }
+        },
+        {
+          "name": "02-02 List Products (public)",
+          "request": {
+            "method": "GET",
+            "url": "{{inventory_base}}/api/v1/inventory/products/"
+          }
+        },
+        {
+          "name": "02-03 Retrieve Product",
+          "request": {
+            "method": "GET",
+            "url": "{{inventory_base}}/api/v1/inventory/products/{{product_id}}/"
+          }
+        },
+        {
+          "name": "02-04 Patch Product",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Product Demo Updated\"\n}"
+            },
+            "url": "{{inventory_base}}/api/v1/inventory/products/{{product_id}}/"
+          }
+        },
+        {
+          "name": "02-05 Adjust Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity_delta\": 5,\n  \"note\": \"Restock for demo\"\n}"
+            },
+            "url": "{{inventory_base}}/api/v1/inventory/products/{{product_id}}/adjust_stock/"
+          }
+        },
+        {
+          "name": "02-06 List Movements",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{inventory_base}}/api/v1/inventory/movements/"
+          }
+        },
+        {
+          "name": "02-07 Retrieve Movement",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{inventory_base}}/api/v1/inventory/movements/{{movement_id}}/"
+          }
+        },
+        {
+          "name": "02-08 Internal Consume (test internal API)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-INTERNAL-API-KEY", "value": "{{internal_api_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"product_id\": {{product_id}},\n      \"quantity\": 1\n    }\n  ]\n}"
+            },
+            "url": "{{inventory_base}}/api/v1/inventory/internal/consume/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Cart APIs (Order Service)",
+      "item": [
+        {
+          "name": "03-01 Cart Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{order_base}}/api/v1/cart/"
+          }
+        },
+        {
+          "name": "03-02 Add To Cart (save cart_item_id)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = {};",
+                  "try { json = pm.response.json(); } catch (e) {}",
+                  "if (json.id) { pm.collectionVariables.set('cart_item_id', String(json.id)); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": {{product_id}},\n  \"product_name\": \"Product Demo\",\n  \"unit_price\": \"{{price}}\",\n  \"quantity\": {{quantity}}\n}"
+            },
+            "url": "{{order_base}}/api/v1/cart/items/"
+          }
+        },
+        {
+          "name": "03-03 List Cart Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{order_base}}/api/v1/cart/items/"
+          }
+        },
+        {
+          "name": "03-04 Patch Cart Item",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3\n}"
+            },
+            "url": "{{order_base}}/api/v1/cart/items/{{cart_item_id}}/"
+          }
+        },
+        {
+          "name": "03-05 Delete Cart Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{order_base}}/api/v1/cart/items/{{cart_item_id}}/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Orders APIs (Order Service)",
+      "item": [
+        {
+          "name": "04-01 Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{order_base}}/api/v1/orders/checkout/"
+          }
+        },
+        {
+          "name": "04-02 List Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{order_base}}/api/v1/orders/"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "project": "ecommerce_backend",
+  "run": {
+    "up": "docker compose up -d --build",
+    "ps": "docker compose ps",
+    "logs": "docker compose logs -f",
+    "down": "docker compose down",
+    "down_with_volumes": "docker compose down -v"
+  },
+  "services": {
+    "mysql": {
+      "host": "127.0.0.1",
+      "port": 3307,
+      "username": "root",
+      "password_env": "MYSQL_ROOT_PASSWORD"
+    },
+    "redis": {
+      "host": "127.0.0.1",
+      "port": 6379
+    },
+    "auth_service": {
+      "base_url": "http://127.0.0.1:8001",
+      "swagger": "http://127.0.0.1:8001/api/docs/",
+      "schema": "http://127.0.0.1:8001/api/schema/"
+    },
+    "inventory_service": {
+      "base_url": "http://127.0.0.1:8002",
+      "swagger": "http://127.0.0.1:8002/api/docs/",
+      "schema": "http://127.0.0.1:8002/api/schema/"
+    },
+    "order_service": {
+      "base_url": "http://127.0.0.1:8003",
+      "swagger": "http://127.0.0.1:8003/api/docs/",
+      "schema": "http://127.0.0.1:8003/api/schema/"
+    }
+  }
+}

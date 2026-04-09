@@ -1,0 +1,114 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: ecommerce_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "${MYSQL_HOST_PORT:-3307}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: ecommerce_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  auth_service:
+    build:
+      context: ./services/auth_service
+    container_name: ecommerce_auth_service
+    env_file:
+      - .env
+    environment:
+      AUTH_DB_HOST: mysql
+      AUTH_DB_PORT: 3306
+      AUTH_DB_USER: root
+      AUTH_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "8001:8001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  inventory_service:
+    build:
+      context: ./services/inventory_service
+    container_name: ecommerce_inventory_service
+    env_file:
+      - .env
+    environment:
+      INVENTORY_DB_HOST: mysql
+      INVENTORY_DB_PORT: 3306
+      INVENTORY_DB_USER: root
+      INVENTORY_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      GLOBAL_ALLOWED_HOSTS: 127.0.0.1,localhost,inventory-service
+    ports:
+      - "8002:8002"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      default:
+        aliases:
+          - inventory-service
+
+  order_service:
+    build:
+      context: ./services/order_service
+    container_name: ecommerce_order_service
+    env_file:
+      - .env
+    environment:
+      ORDER_DB_HOST: mysql
+      ORDER_DB_PORT: 3306
+      ORDER_DB_USER: root
+      ORDER_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      ORDER_INVENTORY_BASE_URL: http://inventory-service:8002
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    ports:
+      - "8003:8003"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      inventory_service:
+        condition: service_started
+
+  order_celery_worker:
+    build:
+      context: ./services/order_service
+    container_name: ecommerce_order_celery
+    env_file:
+      - .env
+    environment:
+      ORDER_DB_HOST: mysql
+      ORDER_DB_PORT: 3306
+      ORDER_DB_USER: root
+      ORDER_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      ORDER_INVENTORY_BASE_URL: http://inventory-service:8002
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    command: ["sh", "-c", "uv run celery -A config worker -l info"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
