@@ -1,0 +1,12 @@
+chạy = postman
+Chạy 01-01 Register để tạo acc.
+
+Chạy 01-02 Login Token để lấy thẻ đăng nhập.
+
+Chạy 02-01 Create Product để tạo ra 1 món hàng.
+
+Chạy 03-02 Add To Cart để nhét món hàng đó vào giỏ.
+
+Chạy 04-01 Checkout để thanh toán giỏ hàng.
+
+Chạy 04-02 List Orders để kiểm tra lại đơn hàng vừa chốt.
